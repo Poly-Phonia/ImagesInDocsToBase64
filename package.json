@@ -9,13 +9,15 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "imagesindocstobase64.helloWorld",
-        "title": "Hello World"
+        "command": "imagesindocstobase64.convertMarkdownImages",
+        "title": "Markdownファイル内のローカル画像参照をbase64文字列に置き換える。"
       }
     ]
   },
