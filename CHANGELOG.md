@@ -1,9 +1,10 @@
 # Change Log
 
-All notable changes to the "imagesindocstobase64" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+All notable changes to the "Images In Docs To Base64" extension will be documented in this file.
 
 ## [Unreleased]
 
-- Initial release
+## [1.0.0]
+
+### Added
+- Initial Create
