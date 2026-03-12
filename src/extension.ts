@@ -11,24 +11,26 @@ type ConvertResult = {
 //画像表示表記を取得するための正規表現パターン
 const IMAGE_REGEX = /!\[([^\]]*)\]\(\s*(<[^>]+>|[^)\s]+)(?:\s+(".*?"|'.*?'|\(.*?\)))?\s*\)/g;
 
+//拡張子とMimeTypeのリスト
+const MIME_MAP: Record<string, string> = {
+	'.png': 'image/png',
+	'.jpg': 'image/jpeg',
+	'.jpeg': 'image/jpeg',
+	'.gif': 'image/gif',
+	'.webp': 'image/webp',
+	'.svg': 'image/svg+xml',
+	'.bmp': 'image/bmp',
+	'.ico': 'image/x-icon',
+	'.tif': 'image/tiff',
+	'.tiff': 'image/tiff',
+	'.avif': 'image/avif'
+};
+
 // 拡張子からMimeTypeを判定する
 function getMimeType(filePath: string): string {
 	const ext = path.extname(filePath).toLowerCase();
-	const mimeMap: Record<string, string> = {
-		'.png': 'image/png',
-		'.jpg': 'image/jpeg',
-		'.jpeg': 'image/jpeg',
-		'.gif': 'image/gif',
-		'.webp': 'image/webp',
-		'.svg': 'image/svg+xml',
-		'.bmp': 'image/bmp',
-		'.ico': 'image/x-icon',
-		'.tif': 'image/tiff',
-		'.tiff': 'image/tiff',
-		'.avif': 'image/avif'
-	};
 
-	return mimeMap[ext] ?? 'application/octet-stream';
+	return MIME_MAP[ext] ?? 'application/octet-stream';
 }
 
 // 実ファイルを参照しているかチェックする
@@ -68,32 +70,48 @@ async function convertMarkdownImagesToBase64(markdownText: string, markdownFileP
 	let lastIndex = 0;
 	const chunks: string[] = [];
 
+	//本文から正規表現にマッチした個所をループする
 	for (const match of markdownText.matchAll(IMAGE_REGEX)) {
+		//マッチ箇所全文
 		const fullMatch = match[0];
+		//画像のalt文字列部分
 		const altText = match[1] ?? '';
+		//画像のパス部分
 		const imagePathRaw = match[2] ?? '';
+		//画像のタイトル部分
 		const titlePart = match[3] ? ` ${match[3]}` : '';
+		//今回マッチした個所の、本文全体から見た位置
 		const startIndex = match.index ?? 0;
 
+		//今回マッチした個所の直前までの本文を保持する
 		chunks.push(markdownText.slice(lastIndex, startIndex));
 		lastIndex = startIndex + fullMatch.length;
 
+		//画像パスを取得
 		const pathForLookup = extractPathForFileLookup(imagePathRaw);
+		//ローカルファイルを参照しているかチェック
 		if (!isFileReference(pathForLookup)) {
+			//ローカルファイルでなければそのままにする
 			skippedCount += 1;
 			chunks.push(fullMatch);
 			continue;
 		}
 
+		//画像パスの取得
 		const absoluteImagePath = path.isAbsolute(pathForLookup)
 			? pathForLookup
 			: path.resolve(path.dirname(markdownFilePath), pathForLookup);
 
 		try {
+			//画像のバイナリを取得
 			const imageBuffer = await fs.readFile(absoluteImagePath);
+			//MimeTypeの取得
 			const mimeType = getMimeType(absoluteImagePath);
+			//base64文字列に変換
 			const base64 = imageBuffer.toString('base64');
+			//base64を使用するdataURLの作成
 			const dataUri = `data:${mimeType};base64,${base64}`;
+			//dataURLを使用した画像要素をchunksに保持
 			chunks.push(`![${altText}](${dataUri}${titlePart})`);
 			convertedCount += 1;
 		} catch {
@@ -102,8 +120,12 @@ async function convertMarkdownImagesToBase64(markdownText: string, markdownFileP
 		}
 	}
 
+	//最後にマッチした個所以降の本文を保持
 	chunks.push(markdownText.slice(lastIndex));
 
+	//この時点でchunksには画像要素以外の本文と、dataURLを使用した画像要素が交互に配置される
+
+	//chunksをゼロスペースで結合することで本文全体を作成して返す
 	return {
 		convertedText: chunks.join(''),
 		convertedCount,
