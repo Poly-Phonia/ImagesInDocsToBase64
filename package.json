@@ -1,8 +1,8 @@
 {
   "name": "imagesindocstobase64",
-  "displayName": "ImagesInDocsToBase64",
+  "displayName": "Images In Docs To Base64",
   "description": "ドキュメント内で参照している画像ファイルパスをbase64に置き換えます。",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.110.0"
   },
