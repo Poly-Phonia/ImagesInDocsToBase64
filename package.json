@@ -17,9 +17,14 @@
     "commands": [
       {
         "command": "imagesindocstobase64.convertMarkdownImages",
-        "title": "Markdownファイル内のローカル画像参照をbase64文字列に置き換える。"
+        "title": "Images In Docs To Base64:Markdownファイル内のローカル画像参照をbase64文字列に置き換える。"
       }
     ]
+  },
+  "icon": "resources/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Poly-Phonia/ImagesInDocsToBase64.git"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
